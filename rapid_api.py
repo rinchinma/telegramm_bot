@@ -111,10 +111,17 @@ def photo_founding(hotel_id) -> json:
 
 
 def best_deal_founding(bot_data):  # Возвращает список согласно бестдил
+    """
+    Сортирует список полученных отелей (из hotel_founding)
+
+    :param bot_data: Словарь ответов пользователя
+    :return: Отсортированный список
+    """
+
     hotels_result = list()
 
     for page in range(1, 4):
-        hotels = hotel_founding(city_id=bot_data['city_neighborhood_id'], command='bestdeal', page=str(page))
+        hotels = hotel_founding(city_id=bot_data['city_area_id'], command='bestdeal', page=str(page))
 
         if hotels:
             counter = 0
@@ -123,54 +130,91 @@ def best_deal_founding(bot_data):  # Возвращает список согл�
                     distance_from_api = hotel["landmarks"][0]["distance"].split()[0].replace(',', '.')
                     price_from_api = hotel["ratePlan"]["price"]["exactCurrent"]
 
-                    if counter == int(bot_data['hotel_quantity']):
+                    if counter == int(bot_data['quantity_hotels']):
                         return hotels_result
-                    elif float(bot_data['center_min']) <= float(distance_from_api) <= float(bot_data['center_max']):
+                    elif float(bot_data['min_distance']) <= \
+                            float(distance_from_api) <= \
+                            float(bot_data['max_distance']):
                         if float(bot_data['min_price']) <= float(price_from_api) <= float(bot_data['max_price']):
                             hotels_result.append(hotel)
                         counter += 1
 
-            if counter == int(bot_data['hotel_quantity']):  # 10
+            if counter == int(bot_data['quantity_hotels']):  # 10
                 return hotels_result
 
 
+def create_hotel_message(bot_data, days_count, user_id, photo_quantity=None):
+    """
+    Функция для создания и вывода информации об отелях
 
+    :param bot_data: словарь ответов пользователя
+    :param days_count: количество дней
+    :param user_id: id пользователя
+    :param photo_quantity: количество фото
 
+    :return: None
+    """
 
+    count = 0
+    data_base_str = ''
 
+    if bot_data['command'] == 'bestdeal':
+        hotels_list = best_deal_founding(bot_data)
+    else:
+        hotels_list = hotel_founding(city_id=bot_data['city_area_id'], command=bot_data['command'])
 
+    quantity_hotels = len(hotels_list)
+    if quantity_hotels == 0:
+        bot.send_message(user_id, 'Извините, по вашему запросу не нашлось отелей. Попробуйте еще раз!')
+    elif 1 <= quantity_hotels < bot_data['quantity_hotels']:
+        bot.send_message(user_id, 'Нашлось лишь {numbers} отелей'.format(numbers=quantity_hotels))
+        bot_data['quantity_hotels'] = quantity_hotels
+    else:
+        bot.send_message(user_id, 'Отели в выбранном районе:')
 
+    for hotel in hotels_list:
+        price_for_one_day = float(hotel.get('ratePlan').get('price').get('exactCurrent'))
+        full_price = round(price_for_one_day * days_count, 2)
 
+        text = 'Отель: {hotel_name}\nЦена за сутки: {hotel_price}\n ' \
+               'Полная стоимость за {days} ночей: ${full_price}\n ' \
+               'Расстояние до центра города: {hotel_distance}\n'.format(
+            hotel_name=hotel.get('name'),
+            hotel_price=hotel.get('ratePlan').get('price').get('current'),
+            days=days_count,
+            full_price=full_price,
+            hotel_distance=hotel.get('landmarks')[0].get('distance'))
 
+        data_base_str += '_' + str(count) + ' ' + hotel.get('name')
 
+        if hotel.get('guestReviews'):
+            if hotel.get('guestReviews').get('rating'):
+                text += '\nРейтинг: {hotel_rating}'.format(hotel_rating=hotel["guestReviews"]["rating"])
 
+        if hotel.get('address') and hotel.get('address').get('streetAddress'):
+            text += '\nАдрес: {hotel_address}'.format(hotel_address=hotel["address"]["streetAddress"])
 
+        if count >= bot_data['quantity_hotels']:
+            break
+        else:
+            if photo_quantity is None:
+                bot.send_message(user_id, text)  # !
+            else:
+                photo_data = photo_founding(hotel_id=hotel['id'])
+                photo_list = list()
 
+                photo_dict = telebot.types.InputMediaPhoto(
+                    photo_data["hotelImages"][0]["baseUrl"].format(size='y'), text)
+                photo_list.append(photo_dict)
 
+                for num in range(photo_quantity - 1):
+                    photo_dict = telebot.types.InputMediaPhoto(
+                        photo_data["hotelImages"][num + 1]["baseUrl"].format(size='y'))
+                    photo_list.append(photo_dict)
 
+                bot.send_media_group(user_id, photo_list)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        count += 1
 
 
 

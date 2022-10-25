@@ -31,8 +31,8 @@ def photo_y_n_markup():
 def quantity_photo_markup():
     destinations = types.InlineKeyboardMarkup()
     destinations.add(types.InlineKeyboardButton(text=5,
-                                                callback_data=f'{5}_2'))
+                                                callback_data=f'{5}_4'))
     destinations.add(types.InlineKeyboardButton(text=10,
-                                                callback_data=f'{10}_2'))
+                                                callback_data=f'{10}_4'))
     return destinations
 
