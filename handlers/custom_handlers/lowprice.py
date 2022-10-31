@@ -131,6 +131,7 @@ def photo_y_n(call):
     with bot.retrieve_data(call.from_user.id, call.message.chat.id) as data:
         data['quantity_hotels'] = int(call.data[:-2])
 
+    bot.delete_message(call.message.chat.id, call.message.message_id)
     bot.send_message(call.message.chat.id, 'Показать фото отелей?',
                      reply_markup=photo_y_n_markup())
     # bot.set_state(call.message.from_user.id, UserInfoState.quantity_photo, call.message.chat.id)
@@ -141,6 +142,7 @@ def quantity_photo(call):
     # если да - запрашивает количество фото
     # если нет - список отелей
 
+    bot.delete_message(call.message.chat.id, call.message.message_id)
     if call.data[:-2] == 'Да':
         bot.send_message(call.message.chat.id, 'Сколько фото показать?',
                          reply_markup=quantity_photo_markup())
@@ -161,6 +163,7 @@ def hotels(call):
     with bot.retrieve_data(call.from_user.id, call.message.chat.id) as data:
         data['quantity_photo'] = int(call.data[:-2])
 
+        bot.delete_message(call.message.chat.id, call.message.message_id)
         days = (data['check_out'] - data['check_in']).days
         create_hotel_message(bot_data=data,
                              days_count=days,
