@@ -6,6 +6,7 @@ from states.state_for_lowprice import UserInfoState
 from loguru import logger
 from datetime import date
 from telegram_bot_calendar import DetailedTelegramCalendar, LSTEP
+from telegram.ext import Filters
 
 
 @bot.message_handler(commands=['low_price', 'high_price', 'bestdeal'])
@@ -26,16 +27,18 @@ def city(message):
     # список районов города
 
     cities_list = city_founding(message.text)
-    if cities_list is not None:
+
+    if cities_list is None:
+        bot.send_message(message.chat.id, 'Извините, не могу найти такой город! '
+                                          'Пожалуйста, проверьте правильность написания города.')
+    else:
         bot.send_message(message.chat.id, 'Уточните, пожалуйста, район города:',
                          reply_markup=city_markup(cities_list))
         # bot.set_state(message.from_user.id, UserInfoState.quantity_hotels, message.chat.id)
 
         with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
             data['city'] = message.text
-    else:
-        bot.send_message(message.chat.id, 'Извините, не могу найти такой город! '
-                                          'Пожалуйста, проверьте правильность написания города.')
+            logger.info('city={text}'.format(text=message.text))
 
 
 @bot.callback_query_handler(func=lambda call: call.data.endswith('_1'))
@@ -124,6 +127,7 @@ def call_back_check_out(call):
 
 
 @bot.callback_query_handler(func=lambda call: call.data.endswith('_2'))
+@logger.catch
 def photo_y_n(call):
     # сохраняет количество отелей
     # фото отелей
@@ -138,6 +142,7 @@ def photo_y_n(call):
 
 
 @bot.callback_query_handler(func=lambda call: call.data.endswith('_3'))
+@logger.catch
 def quantity_photo(call):
     # если да - запрашивает количество фото
     # если нет - список отелей
@@ -156,6 +161,7 @@ def quantity_photo(call):
 
 
 @bot.callback_query_handler(func=lambda call: call.data.endswith('_4'))
+@logger.catch
 def hotels(call):
     # сохраняет количество фото
     # список отелей

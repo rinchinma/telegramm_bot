@@ -17,6 +17,7 @@ headers = {
 }
 
 
+@logger.catch
 def request_to_api(url: str, querystring: dict):
     """
     Функция запрос и проверка информации с сайта
@@ -34,6 +35,7 @@ def request_to_api(url: str, querystring: dict):
         print('API error')
 
 
+@logger.catch
 def city_founding(city='New York') -> list:
     """
     Функция для уточнения районов города
@@ -65,6 +67,7 @@ def city_founding(city='New York') -> list:
     return cities
 
 
+@logger.catch
 def hotel_founding(city_id, command="lowprice", page="1") -> list:
     """
     Функция для поиска отелей
@@ -81,7 +84,7 @@ def hotel_founding(city_id, command="lowprice", page="1") -> list:
         sort_order = 'PRICE'
 
     querystring = {"destinationId": city_id, "pageNumber": page, "pageSize": "25",
-                   "checkIn": "2020-01-08", "checkOut": "2020-01-15", "adults1": "1",
+                   "checkIn": "2024-01-08", "checkOut": "2024-01-15", "adults1": "1",  # 2020-01-08 2020-01-15
                    "sortOrder": sort_order, "locale": "en_US", "currency": "USD"}
 
     response = request_to_api(url=url, querystring=querystring)
@@ -93,6 +96,7 @@ def hotel_founding(city_id, command="lowprice", page="1") -> list:
         return hotels_list
 
 
+@logger.catch
 def photo_founding(hotel_id) -> json:
     """
     Функция для поиска фото
@@ -114,6 +118,7 @@ def photo_founding(hotel_id) -> json:
         return data
 
 
+@logger.catch
 def best_deal_founding(bot_data):  # Возвращает список согласно бестдил
     """
     Сортирует список полученных отелей (из hotel_founding)
@@ -129,27 +134,22 @@ def best_deal_founding(bot_data):  # Возвращает список согл�
         if hotels:
             counter = 0
             for hotel in hotels:
-                if hotel["landmarks"][0].get("distance"):
-                    distance_from_api = hotel["landmarks"][0]["distance"].split()[0].replace(',', '.')
+                if counter == bot_data['quantity_hotels']:
+                    return hotels_result
+                elif hotel["landmarks"][0].get("distance"):
+                    distance_from_api = hotel["landmarks"][0]["distance"].split()[0].replace(',', '.')  # !
                     # price_from_api = hotel["ratePlan"]["price"]["exactCurrent"]
-                    if hotel.get("ratePlan"):
+                    if hotel.get("ratePlan").get("price").get("exactCurrent"):
                         price_from_api = hotel["ratePlan"]["price"]["exactCurrent"]
-                    else:
-                        price_from_api = 0
-
-                    if counter == bot_data['quantity_hotels']:
-                        return hotels_result
-                    elif float(bot_data['min_distance']) <= \
-                            float(distance_from_api) <= \
-                            float(bot_data['max_distance']):
-                        if float(bot_data['min_price']) <= float(price_from_api) <= float(bot_data['max_price']):
-                            hotels_result.append(hotel)
-                        counter += 1
-
-            if counter == int(bot_data['quantity_hotels']):  # 10
-                return hotels_result
+                        if float(bot_data['min_distance']) <= \
+                                float(distance_from_api) <= \
+                                float(bot_data['max_distance']):
+                            if float(bot_data['min_price']) <= float(price_from_api) <= float(bot_data['max_price']):
+                                hotels_result.append(hotel)
+                                counter += 1
 
 
+@logger.catch
 def create_hotel_message(bot_data, days_count, user_id, photo_quantity=None):
     """
     Функция для создания и вывода информации об отелях
