@@ -202,8 +202,8 @@ def create_hotel_message(bot_data, days_count, user_id, photo_quantity=None):
                 text += '\nАдрес: {hotel_address}'.format(hotel_address=hotel["address"]["streetAddress"])
 
             if hotel.get('optimizedThumbUrls').get('srpDesktop'):
-                text += '\nСсылка на сайт отеля: {hotel_link}'.\
-                    format(hotel_link=hotel["optimizedThumbUrls"]["srpDesktop"])
+                text += '\nСсылка на сайт отеля: hotels.com/ho{id_hotel}'.\
+                    format(id_hotel=hotel["id"])
 
             if count >= bot_data['quantity_hotels']:
                 break

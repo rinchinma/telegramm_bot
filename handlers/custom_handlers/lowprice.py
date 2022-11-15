@@ -6,7 +6,6 @@ from states.state_for_lowprice import UserInfoState
 from loguru import logger
 from datetime import date
 from telegram_bot_calendar import DetailedTelegramCalendar, LSTEP
-from telegram.ext import Filters
 
 
 @bot.message_handler(commands=['low_price', 'high_price', 'bestdeal'])
