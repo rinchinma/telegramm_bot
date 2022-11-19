@@ -171,14 +171,14 @@ def create_hotel_message(bot_data, days_count, user_id, photo_quantity=None):
         hotels_list = hotel_founding(city_id=bot_data['city_area_id'], command=bot_data['command'])
 
     if hotels_list is None:
-        bot.send_message(user_id, 'Извините, по вашему запросу не нашлось отелей. Попробуйте еще раз!')
+        bot.send_message(user_id, 'Извините, по вашему запросу не нашлось отелей(( Попробуйте еще раз')
     else:
         quantity_hotels = len(hotels_list)
         if 1 <= quantity_hotels < bot_data['quantity_hotels']:
-            bot.send_message(user_id, 'Нашлось лишь {numbers} отелей'.format(numbers=quantity_hotels))
+            bot.send_message(user_id, '🏨Нашлось лишь {numbers} отелей'.format(numbers=quantity_hotels))
             bot_data['quantity_hotels'] = quantity_hotels
         else:
-            bot.send_message(user_id, 'Отели в выбранном районе:')
+            bot.send_message(user_id, '🏨Отели в выбранном районе:')
 
         for hotel in hotels_list:
             price_for_one_day = float(hotel.get('ratePlan').get('price').get('exactCurrent'))

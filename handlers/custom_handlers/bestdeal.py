@@ -15,7 +15,7 @@ def min_price(message: Message) -> None:
         with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
             data['min_price'] = message.text
     else:
-        bot.send_message(message.from_user.id, 'Ошибка при вводе! Пожалуйста, введите число')
+        bot.send_message(message.from_user.id, 'Пожалуйста, введите число')
 
 
 @bot.message_handler(state=UserInfoState.max_price)
@@ -24,11 +24,11 @@ def max_price(message: Message) -> None:
     with bot.retrieve_data(message.from_user.id, message.chat.id) as bot_data:
         if message.text.isdigit() and int(bot_data['min_price']) < int(message.text):
             bot_data['max_price'] = message.text
-            bot.send_message(message.from_user.id, 'Спасибо! Укажите '
-                                                   'минимальное расстояние от центра города (в киломертах)')
+            bot.send_message(message.from_user.id, '🖊Спасибо! Укажите минимальное расстояние от центра города '
+                                                   '(в киломертах)')
             bot.set_state(message.from_user.id, UserInfoState.min_distance, message.chat.id)
         else:
-            bot.send_message(message.from_user.id, 'Ошибка при вводе! Пожалуйста, введите число')
+            bot.send_message(message.from_user.id, 'Пожалуйста, введите число')
 
 
 @bot.message_handler(state=UserInfoState.min_distance)
@@ -42,7 +42,7 @@ def min_distance(message: Message) -> None:
                                                '(в киломертах)')
         bot.set_state(message.from_user.id, UserInfoState.max_distance, message.chat.id)
     else:
-        bot.send_message(message.from_user.id, 'Ошибка при вводе! Пожалуйста, введите число')
+        bot.send_message(message.from_user.id, 'Пожалуйста, введите число')
 
 
 @bot.message_handler(state=UserInfoState.max_distance)
@@ -56,7 +56,7 @@ def max_distance(message: Message) -> None:
                                  reply_markup=quantity_hotels_markup())
                 bot.set_state(message.from_user.id, UserInfoState.photo_y_n, message.chat.id)
     else:
-        bot.send_message(message.from_user.id, 'Ошибка при вводе! Пожалуйста, введите число')
+        bot.send_message(message.from_user.id, 'Пожалуйста, введите число')
 
 
 

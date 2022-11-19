@@ -16,7 +16,7 @@ def start(message):
     with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
         data['command'] = message.text[1:]
 
-    bot.send_message(message.chat.id, 'В какой город направляетесь?')
+    bot.send_message(message.chat.id, '🗺В какой город направляетесь?')
     bot.set_state(message.from_user.id, UserInfoState.city, message.chat.id)
 
 
@@ -28,10 +28,10 @@ def city(message):
     cities_list = city_founding(message.text)
 
     if cities_list is None:
-        bot.send_message(message.chat.id, 'Извините, не могу найти такой город! '
-                                          'Пожалуйста, проверьте правильность написания города.')
+        bot.send_message(message.chat.id, 'Извините, не могу найти такой город(( '
+                                          'Пожалуйста, проверьте правильность написания города')
     else:
-        bot.send_message(message.chat.id, 'Уточните, пожалуйста, район города:',
+        bot.send_message(message.chat.id, '🏙Уточните, пожалуйста, район города:',
                          reply_markup=city_markup(cities_list))
         # bot.set_state(message.from_user.id, UserInfoState.quantity_hotels, message.chat.id)
 
@@ -42,19 +42,20 @@ def city(message):
 
 @bot.callback_query_handler(func=lambda call: call.data.endswith('_1'))
 @logger.catch
-def quantity_hotels(call):
+def city_area(call):
     # сохраняет id района города
     # календарь
 
     with bot.retrieve_data(call.from_user.id, call.message.chat.id) as data:
         data['city_area_id'] = call.data[:-2]
 
+    bot.delete_message(call.message.chat.id, call.message.message_id)
     calendar, step = DetailedTelegramCalendar(calendar_id='in',
                                               min_date=date.today(),
                                               max_date=date(2024, 10, 21)).build()
 
     ru_steps = {'y': 'год', 'm': 'месяц', 'd': 'день'}
-    bot.send_message(call.message.chat.id, f'Выберите дату заезда:\n{ru_steps[step]}',
+    bot.send_message(call.message.chat.id, f'🗓Выберите дату заезда:\n{ru_steps[step]}',
                      reply_markup=calendar)
 
 
@@ -76,7 +77,7 @@ def call_back_check_in(call):
                               message_id=call.message.message_id,
                               reply_markup=key)
     elif result:
-        bot.edit_message_text(f"Дата заезда: {result}",
+        bot.edit_message_text(f"🗓Дата заезда: {result}",
                               call.message.chat.id,
                               call.message.message_id)
         with bot.retrieve_data(call.from_user.id, call.message.chat.id) as data:
@@ -88,7 +89,7 @@ def call_back_check_in(call):
             max_date=date(2024, 3, 31)
         ).build()
 
-        bot.send_message(call.message.chat.id, f'Выберите дату выезда:\n{ru_steps[step]}',
+        bot.send_message(call.message.chat.id, f'🗓Выберите дату выезда:\n{ru_steps[step]}',
                          reply_markup=calendar)
 
 
@@ -109,7 +110,7 @@ def call_back_check_out(call):
                               message_id=call.message.message_id,
                               reply_markup=key)
     elif result:
-        bot.edit_message_text(f"Дата выезда: {result}",
+        bot.edit_message_text(f"🗓Дата выезда: {result}",
                               call.message.chat.id,
                               call.message.message_id)
 
@@ -117,7 +118,7 @@ def call_back_check_out(call):
             data['check_out'] = result
 
             if data['command'] == 'bestdeal':
-                bot.send_message(call.message.chat.id, 'Введите, пожалуйста, минимальную стоимость отеля за ночь:')
+                bot.send_message(call.message.chat.id, '💲Введите минимальную стоимость отеля за ночь:')
                 bot.set_state(call.from_user.id, UserInfoState.min_price, call.message.chat.id)
             else:
                 bot.send_message(call.message.chat.id, 'Сколько отелей показать?',
